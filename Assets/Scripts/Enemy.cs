@@ -31,7 +31,7 @@ public class Enemy : MonoBehaviour
         {
             // Move toward player
             Vector3 direction = (player.transform.position - transform.position).normalized;
-            rb.velocity = direction * moveSpeed;
+            rb.linearVelocity = direction * moveSpeed;
         }
     }
 
@@ -53,6 +53,7 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        Debug.Log($"Enemy took {damage} damage. Health: {health} -> {health - damage}");
         health -= damage;
 
         // Visual feedback - flash red

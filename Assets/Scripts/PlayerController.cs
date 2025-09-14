@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,7 +9,6 @@ public class PlayerController : MonoBehaviour
     public float idleDefenseBuff = 0.5f; // 50% damage reduction in idle mode
 
     [Header("Pulse Settings")]
-    public GameObject pulsePrefab;
     public float activePulseCooldown = 0.3f;
     public float idlePulseCooldown = 1f;
     public float pulseSpeed = 10f;
@@ -23,17 +23,12 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         mainCamera = Camera.main;
-        // Create pulse prefab if it doesn't exist
-        if (pulsePrefab == null)
-        {
-            CreatePulsePrefab();
-        }
     }
 
     void Update()
     {
         // Handle mode switching with right click
-        if (Input.GetMouseButtonDown(1)) // Right click
+        if (Mouse.current.rightButton.wasPressedThisFrame)
         {
             ToggleMode();
         }
@@ -42,7 +37,7 @@ public class PlayerController : MonoBehaviour
         if (isActiveMode)
         {
             // Manual pulse firing with left click
-            if (Input.GetMouseButtonDown(0) && Time.time - lastPulseTime > activePulseCooldown)
+            if (Mouse.current.leftButton.wasPressedThisFrame && Time.time - lastPulseTime > activePulseCooldown)
             {
                 FirePulse();
             }
@@ -71,7 +66,7 @@ public class PlayerController : MonoBehaviour
 
     void FirePulse()
     {
-        Vector3 mousePos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         mousePos.z = 0;
         Vector3 direction = (mousePos - transform.position).normalized;
 
@@ -111,16 +106,17 @@ public class PlayerController : MonoBehaviour
 
     void CreatePulse(Vector3 direction)
     {
-        GameObject pulse = Instantiate(pulsePrefab, transform.position, Quaternion.identity);
+        GameObject pulse = CreatePulseObject();
+        pulse.transform.position = transform.position;
         Pulse pulseScript = pulse.GetComponent<Pulse>();
         pulseScript.Initialize(direction, pulseSpeed, pulseDamage);
 
         lastPulseTime = Time.time;
     }
 
-    void CreatePulsePrefab()
+    GameObject CreatePulseObject()
     {
-        // Create a simple pulse prefab
+        // Create a pulse object directly
         GameObject pulseObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         pulseObj.name = "Pulse";
         pulseObj.transform.localScale = Vector3.one * 0.3f;
@@ -132,10 +128,11 @@ public class PlayerController : MonoBehaviour
         Renderer renderer = pulseObj.GetComponent<Renderer>();
         renderer.material.color = Color.yellow;
 
-        // Remove collider (we'll handle collision in the Pulse script)
-        Destroy(pulseObj.GetComponent<Collider>());
+        // Configure collider for trigger detection
+        Collider pulseCollider = pulseObj.GetComponent<Collider>();
+        pulseCollider.isTrigger = true;
 
-        pulsePrefab = pulseObj;
+        return pulseObj;
     }
 
     public void TakeDamage(float damage)

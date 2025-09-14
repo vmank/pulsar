@@ -60,6 +60,7 @@ public class GameManager : MonoBehaviour
 
         GameObject enemyObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         enemyObj.name = "Enemy";
+        enemyObj.tag = "Enemy";
         enemyObj.transform.position = new Vector3(spawnPos.x, spawnPos.y, 0);
         enemyObj.transform.localScale = Vector3.one * 0.8f;
 

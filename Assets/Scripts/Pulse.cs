@@ -28,11 +28,14 @@ public class Pulse : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"Pulse hit: {other.name} with tag: {other.tag}");
+
         if (other.CompareTag("Enemy"))
         {
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null)
             {
+                Debug.Log($"Dealing {damage} damage to enemy");
                 enemy.TakeDamage(damage);
             }
 
